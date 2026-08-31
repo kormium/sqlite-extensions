@@ -62,9 +62,13 @@ in the message — not as `no such module` on some later query.
 
 ## Developing
 
+> **Not yet buildable standalone.** `kormium-sqlite-spi` and the `sqlite-headers` artifact are not
+> on Maven Central yet — they land with the next Kormium release. Until then the build needs a
+> Kormium checkout beside this one, which is what CI does too.
+
 With a Kormium checkout next to this one the build uses it directly (composite build), so a change
-to the SPI shows up here immediately. Without it, published artifacts are resolved instead. Force
-the standalone path with `-Pkormium.ignoreSibling=true`.
+to the SPI shows up here immediately. Without it, published artifacts are resolved instead — which
+will start working once the SPI ships. Force the standalone path with `-Pkormium.ignoreSibling=true`.
 
 ```sh
 ./gradlew build          # needs the Kotlin/Native toolchain; downloads sqlite-vec at build time

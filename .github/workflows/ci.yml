@@ -11,6 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: sqlite-extensions
+
+      # kormium-sqlite-spi is not on Maven Central yet, so the build resolves Kormium from a
+      # checkout beside this one (see settings.gradle.kts). Once the SPI ships this step can go and
+      # the build can run standalone with -Pkormium.ignoreSibling=true.
+      - uses: actions/checkout@v4
+        with:
+          repository: kormium/kormium
+          path: kormium
 
       - uses: actions/setup-java@v4
         with:
@@ -19,10 +29,10 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      # Standalone: resolve Kormium from Maven Central rather than a sibling checkout, which is
-      # what a third-party author's build looks like.
       - name: Build and test
-        run: ./gradlew build -Pkormium.ignoreSibling=true
+        working-directory: sqlite-extensions
+        run: ./gradlew build
 
       - name: Check the public ABI
-        run: ./gradlew apiCheck -Pkormium.ignoreSibling=true
+        working-directory: sqlite-extensions
+        run: ./gradlew apiCheck
