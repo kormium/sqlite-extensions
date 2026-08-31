@@ -1,0 +1,20 @@
+// Klib ABI Dump
+// Targets: [linuxX64, mingwX64, wasmJs]
+// Alias: native => [linuxX64, mingwX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <io.github.kormium:kormium-sqlite-vec>
+final object io.github.kormium.sqlite.vec/SqliteVec : io.github.kormium/SqliteExtension { // io.github.kormium.sqlite.vec/SqliteVec|null[0]
+    final val name // io.github.kormium.sqlite.vec/SqliteVec.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.kormium.sqlite.vec/SqliteVec.name.<get-name>|<get-name>(){}[0]
+    final val supportedEngines // io.github.kormium.sqlite.vec/SqliteVec.supportedEngines|{}supportedEngines[0]
+        final fun <get-supportedEngines>(): kotlin.collections/Set<io.github.kormium/SqliteEngine> // io.github.kormium.sqlite.vec/SqliteVec.supportedEngines.<get-supportedEngines>|<get-supportedEngines>(){}[0]
+
+    final fun install(io.github.kormium/SqliteConnectionScope) // io.github.kormium.sqlite.vec/SqliteVec.install|install(io.github.kormium.SqliteConnectionScope){}[0]
+
+    // Targets: [native]
+    final fun beforeOpen(io.github.kormium/SqliteRegistrationScope) // io.github.kormium.sqlite.vec/SqliteVec.beforeOpen|beforeOpen(io.github.kormium.SqliteRegistrationScope){}[0]
+}
