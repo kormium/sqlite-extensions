@@ -1,0 +1,53 @@
+name: publish
+
+# Manual-only, like Kormium's own release: publishing to Maven Central is irreversible, so it never
+# fires from a push. A maintainer dispatches it, choosing the ref to build from.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to publish from (a release tag like v0.1.0, or main)."
+        required: true
+        default: main
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    # macOS: it is the only host where every declared target builds, so all packages go out as one
+    # complete set rather than a Linux-shaped subset with the Apple klibs missing.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # Against the published Kormium, not a sibling checkout — what a third-party author's build
+      # would resolve.
+      - name: Check the public ABI
+        run: ./gradlew apiCheck -Pkormium.ignoreSibling=true
+
+      # An extension that does not actually register is worse than one that is missing, so the
+      # packages are exercised before anything is published: sqlite-vec's own KNN test, and the
+      # sample that puts four extensions in one database.
+      - name: Test
+        run: >-
+          ./gradlew -Pkormium.ignoreSibling=true
+          :kormium-sqlite-vec:linuxX64Test
+          :sample:linuxX64Test
+
+      - name: Publish to Maven Central Portal
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_IN_MEMORY_KEY_PASSWORD }}
+        run: ./gradlew publishToMavenCentral --no-configuration-cache --console=plain -Pkormium.ignoreSibling=true

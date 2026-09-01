@@ -124,6 +124,18 @@ as CI does.
 ./gradlew :kormium-sqlite-vec:linuxX64Test
 ```
 
+## Releasing
+
+Manual, like Kormium's own: publishing to Maven Central cannot be undone, so nothing fires from a
+push. Bump `version` in `gradle.properties`, tag, then dispatch the `publish` workflow with that
+tag. It runs on macOS — the only host where every declared target builds, so the packages go out as
+one complete set rather than a Linux-shaped subset with the Apple klibs missing — and it runs
+`apiCheck` and the tests, including the four-extension sample, before publishing anything.
+
+It needs the same secrets as Kormium: `MAVEN_CENTRAL_USERNAME`, `MAVEN_CENTRAL_PASSWORD`,
+`SIGNING_IN_MEMORY_KEY`, `SIGNING_IN_MEMORY_KEY_PASSWORD`. Like there, the deployment lands in the
+Central Portal as `USER_MANAGED` and waits for a **Publish** click.
+
 ## Licence
 
 Apache 2.0. sqlite-vec is MIT/Apache-2.0; SQLite itself is public domain.
