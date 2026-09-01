@@ -11,16 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: sqlite-extensions
-
-      # kormium-sqlite-spi is not on Maven Central yet, so the build resolves Kormium from a
-      # checkout beside this one (see settings.gradle.kts). Once the SPI ships this step can go and
-      # the build can run standalone with -Pkormium.ignoreSibling=true.
-      - uses: actions/checkout@v4
-        with:
-          repository: kormium/kormium
-          path: kormium
 
       - uses: actions/setup-java@v4
         with:
@@ -29,10 +19,14 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Build and test
-        working-directory: sqlite-extensions
-        run: ./gradlew build
+      # Explicit tasks rather than `build`: on a Linux runner `build` reaches the shared native
+      # metadata, which needs the cinterop of every declared target — including the Apple ones,
+      # whose C cannot be compiled here. Kormium's own CI is task-by-task for the same reason.
+      - name: Test on linuxX64
+        run: ./gradlew :kormium-sqlite-vec:linuxX64Test -Pkormium.ignoreSibling=true
+
+      - name: Compile the Node flavour
+        run: ./gradlew :kormium-sqlite-vec:compileKotlinWasmJs -Pkormium.ignoreSibling=true
 
       - name: Check the public ABI
-        working-directory: sqlite-extensions
-        run: ./gradlew apiCheck
+        run: ./gradlew apiCheck -Pkormium.ignoreSibling=true

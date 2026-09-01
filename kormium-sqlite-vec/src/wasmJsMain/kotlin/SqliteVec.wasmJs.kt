@@ -17,9 +17,9 @@ private fun loadablePath(): String = js("require('sqlite-vec').getLoadablePath()
  */
 public actual object SqliteVec : SqliteExtension {
 
-    override val name: String = "sqlite-vec"
+    actual override val name: String = "sqlite-vec"
 
-    override val supportedEngines: Set<SqliteEngine> = setOf(SqliteEngine.BetterSqlite3)
+    actual override val supportedEngines: Set<SqliteEngine> = setOf(SqliteEngine.BetterSqlite3)
 
     override fun install(connection: SqliteConnectionScope) {
         connection.loadLibrary(loadablePath())

@@ -17,9 +17,9 @@ import kotlinx.cinterop.ExperimentalForeignApi
  */
 public actual object SqliteVec : SqliteExtension {
 
-    override val name: String = "sqlite-vec"
+    actual override val name: String = "sqlite-vec"
 
-    override val supportedEngines: Set<SqliteEngine> = setOf(SqliteEngine.Native)
+    actual override val supportedEngines: Set<SqliteEngine> = setOf(SqliteEngine.Native)
 
     @OptIn(ExperimentalForeignApi::class)
     override fun beforeOpen(registration: SqliteRegistrationScope) {
