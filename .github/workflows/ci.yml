@@ -31,6 +31,8 @@ jobs:
           :kormium-sqlite-series:compileKotlinLinuxX64
           :kormium-sqlite-sha1:compileKotlinLinuxX64
           :kormium-sqlite-decimal:compileKotlinLinuxX64
+          :kormium-sqlite-lines:compileKotlinLinuxX64
+          :kormium-sqlite-path:compileKotlinLinuxX64
 
       # Four packages in one binary. This is what would break first if a package ever started
       # carrying a SQLite of its own.

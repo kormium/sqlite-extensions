@@ -61,24 +61,25 @@ val fetchSource = tasks.register("fetchExtensionSource") {
     doLast {
         val dir = sourceDir.get().asFile
         dir.mkdirs()
-        val url = spec.sourceUrl.get()
-        val downloaded = File(dir, url.substringAfterLast('/').substringBefore('?'))
-        uri(url).toURL().openStream().use { input ->
-            downloaded.outputStream().use { input.copyTo(it) }
-        }
-        if (downloaded.name.endsWith(".zip")) {
-            copy {
-                from(zipTree(downloaded))
-                into(dir)
+        for (url in listOf(spec.sourceUrl.get()) + spec.extraSourceUrls.get()) {
+            val downloaded = File(dir, url.substringAfterLast('/').substringBefore('?'))
+            uri(url).toURL().openStream().use { input ->
+                downloaded.outputStream().use { input.copyTo(it) }
             }
-        } else if (downloaded.name.endsWith(".tar.gz")) {
-            copy {
-                from(tarTree(resources.gzip(downloaded)))
-                into(dir)
+            when {
+                downloaded.name.endsWith(".zip") -> copy {
+                    from(zipTree(downloaded))
+                    into(dir)
+                }
+                downloaded.name.endsWith(".tar.gz") -> copy {
+                    from(tarTree(resources.gzip(downloaded)))
+                    into(dir)
+                }
             }
         }
-        val wanted = File(dir, spec.sourceFile.get())
-        check(wanted.isFile) { "${spec.sourceFile.get()} not found in $url" }
+        for (file in listOf(spec.sourceFile.get()) + spec.extraSourceFiles.get()) {
+            check(File(dir, file).isFile) { "$file was not among the fetched sources" }
+        }
     }
 }
 
@@ -132,14 +133,28 @@ kotlin {
             listOf(dist.resolve("bin/run_konan").absolutePath)
     }
 
-    listOf(
-        linuxX64(), macosX64(), macosArm64(), mingwX64(),
-        iosX64(), iosArm64(), iosSimulatorArm64(),
-    ).forEach { target ->
+    // Which native targets this package builds for, keyed by project name in the root
+    // gradle.properties. A property rather than part of the `sqliteExtension { }` block because
+    // targets are registered when this plugin is applied, before the package's build script body
+    // runs. Defaults to everything; sqlite-lines, for instance, uses POSIX getdelim/fmemopen and
+    // cannot build for Windows.
+    val requested = providers.gradleProperty("${project.name}.targets").orNull
+        ?.split(',')?.map { it.trim() }?.filter { it.isNotEmpty() }?.toSet()
+    val allTargets = mapOf(
+        "linuxX64" to { linuxX64() },
+        "macosX64" to { macosX64() },
+        "macosArm64" to { macosArm64() },
+        "mingwX64" to { mingwX64() },
+        "iosX64" to { iosX64() },
+        "iosArm64" to { iosArm64() },
+        "iosSimulatorArm64" to { iosSimulatorArm64() },
+    )
+    requested?.forEach { check(it in allTargets) { "unknown target '$it' in sqliteExtension.targets" } }
+    allTargets.filterKeys { requested == null || it in requested }.values.map { it() }.forEach { target ->
         val konanName = target.konanTarget.name
         val capName = target.targetName.replaceFirstChar { it.uppercase() }
         val outDir = layout.buildDirectory.dir("extension/$konanName")
-        val objFile = outDir.map { it.file("extension.o") }
+        val objDir = outDir.map { it.dir("obj") }
         val staticLib = outDir.map { it.file("libextension.a") }
 
         val compile = tasks.register<Exec>("compileExtension$capName") {
@@ -149,39 +164,44 @@ kotlin {
             dependsOn(fetchSource, unpackHeaders, "downloadKotlinNativeDistribution")
             inputs.dir(sourceDir)
             inputs.dir(headersDir)
-            outputs.file(objFile)
+            outputs.dir(objDir)
             doFirst {
-                objFile.get().asFile.parentFile.mkdirs()
+                objDir.get().asFile.mkdirs()
                 // Through a response file: run_konan swallows `-DFOO=1` passed directly (its JVM
                 // launcher takes them for system properties), which would silently drop
                 // -DSQLITE_CORE and build a loadable extension instead of a static one. This
                 // happens on every host, not only Windows.
                 fun q(f: File) = "\"" + f.absolutePath.replace('\\', '/') + "\""
-                val source = File(sourceDir.get().asFile, spec.sourceFile.get())
-                val rsp = objFile.get().asFile.resolveSibling("clang-args.rsp")
+                // One clang invocation per .c: an extension may vendor a dependency, and they all
+                // end up in the same archive.
+                val sources = listOf(spec.sourceFile.get()) + spec.extraSourceFiles.get()
+                val rsp = File(objDir.get().asFile, "clang-args.rsp")
                 rsp.writeText(
                     (
                         listOf("-O2", "-DSQLITE_CORE=1") + spec.extraDefines.get() +
                             listOf(
                                 "-I" + headersDir.get().asFile.absolutePath,
                                 "-I" + sourceDir.get().asFile.absolutePath,
-                                "-c", q(source), "-o", q(objFile.get().asFile),
-                            )
+                                "-c",
+                            ) + sources.map { q(File(sourceDir.get().asFile, it)) }
                         ).joinToString("\n"),
                 )
+                // clang writes each object next to nothing useful without -o, so run it from the
+                // object directory and let it name them after the sources.
+                workingDir(objDir.get().asFile)
                 commandLine(runKonan() + listOf("clang", "clang", konanName, "@" + rsp.absolutePath))
             }
         }
         val archive = tasks.register<Exec>("archiveExtension$capName") {
             dependsOn(compile)
-            inputs.file(objFile)
+            inputs.dir(objDir)
             outputs.file(staticLib)
             doFirst {
+                val objects = objDir.get().asFile.listFiles { f -> f.extension == "o" }
+                    ?.map { it.absolutePath }.orEmpty().sorted()
+                check(objects.isNotEmpty()) { "no objects were produced for $konanName" }
                 commandLine(
-                    runKonan() + listOf(
-                        "llvm", "llvm-ar", "rcs",
-                        staticLib.get().asFile.absolutePath, objFile.get().asFile.absolutePath,
-                    ),
+                    runKonan() + listOf("llvm", "llvm-ar", "rcs", staticLib.get().asFile.absolutePath) + objects,
                 )
             }
         }

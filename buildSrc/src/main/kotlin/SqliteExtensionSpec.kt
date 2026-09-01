@@ -30,6 +30,15 @@ abstract class SqliteExtensionSpec {
     /** Extra `-D` flags this extension needs, beyond `-DSQLITE_CORE`. */
     abstract val extraDefines: ListProperty<String>
 
+    /**
+     * Further files to fetch alongside [sourceUrl] — a vendored dependency's sources, say. They
+     * land in the same directory, so a `#include` of one from the other resolves.
+     */
+    abstract val extraSourceUrls: ListProperty<String>
+
+    /** Further `.c` files to compile into this extension's archive, named as fetched. */
+    abstract val extraSourceFiles: ListProperty<String>
+
     /** The cinterop package name, derived from [extensionName] unless set. Must be unique. */
     abstract val cinteropPackage: Property<String>
 

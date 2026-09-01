@@ -29,6 +29,8 @@ db.autocommit {
 | `kormium-sqlite-series` | SQLite's `ext/misc/series.c` — `generate_series()` | Kotlin/Native, iOS |
 | `kormium-sqlite-sha1` | SQLite's `ext/misc/sha1.c` — `sha1()`, `sha1_query()` | Kotlin/Native, iOS |
 | `kormium-sqlite-decimal` | SQLite's `ext/misc/decimal.c` — exact decimal arithmetic | Kotlin/Native, iOS |
+| `kormium-sqlite-lines` | [sqlite-lines](https://github.com/asg017/sqlite-lines) — read a file or blob line by line | Kotlin/Native, iOS |
+| `kormium-sqlite-path` | [sqlite-path](https://github.com/asg017/sqlite-path) — parse and build filesystem paths | Kotlin/Native, iOS |
 
 The `ext/misc` ones are Kotlin/Native only because SQLite distributes them as source: there is no
 prebuilt binary to load on the JVM or Node, so they are linked into the binary instead.
@@ -83,6 +85,18 @@ there as a `sqlite-headers` artifact, so the two cannot drift apart.
 `supportedEngines` says where a package works. A driver checks it while opening the database, so
 using a package on a platform it was never built for fails at `createSqliteDatabase` with its name
 in the message — not as `no such module` on some later query.
+
+## What cannot be packaged this way
+
+Static linking into a Kotlin/Native binary needs C with no unbundled native dependencies. Two limits
+found by trying:
+
+- **`sqlite-url` needs libcurl.** Statically linking curl and its TLS stack for seven targets is a
+  project of its own, not another extension. Left out.
+- **Rust and Go extensions** (`sqlite-regex`, `sqlite-ulid`, `sqlite-xsv`, `sqlite-jsonschema`,
+  `sqlite-fastrand`, `sqlite-http`, `sqlite-html`) cannot be linked into a K/N binary at all. They
+  are not lost, though: on the JVM and Node nothing is linked — a prebuilt binary is loaded — so
+  those platforms can have them. That needs a different shape of package, and is not built yet.
 
 ## Not yet covered
 

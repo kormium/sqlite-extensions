@@ -1,0 +1,16 @@
+// Klib ABI Dump
+// Targets: [linuxX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <io.github.kormium:kormium-sqlite-lines>
+final object io.github.kormium.sqlite.lines/SqliteLines : io.github.kormium/SqliteExtension { // io.github.kormium.sqlite.lines/SqliteLines|null[0]
+    final val name // io.github.kormium.sqlite.lines/SqliteLines.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.kormium.sqlite.lines/SqliteLines.name.<get-name>|<get-name>(){}[0]
+    final val supportedEngines // io.github.kormium.sqlite.lines/SqliteLines.supportedEngines|{}supportedEngines[0]
+        final fun <get-supportedEngines>(): kotlin.collections/Set<io.github.kormium/SqliteEngine> // io.github.kormium.sqlite.lines/SqliteLines.supportedEngines.<get-supportedEngines>|<get-supportedEngines>(){}[0]
+
+    final fun beforeOpen(io.github.kormium/SqliteRegistrationScope) // io.github.kormium.sqlite.lines/SqliteLines.beforeOpen|beforeOpen(io.github.kormium.SqliteRegistrationScope){}[0]
+}

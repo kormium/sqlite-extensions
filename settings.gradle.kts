@@ -14,6 +14,8 @@ include(
     "kormium-sqlite-series",
     "kormium-sqlite-sha1",
     "kormium-sqlite-decimal",
+    "kormium-sqlite-lines",
+    "kormium-sqlite-path",
     "sample",
 )
 
