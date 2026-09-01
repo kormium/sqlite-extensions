@@ -124,6 +124,12 @@ as CI does.
 ./gradlew :kormium-sqlite-vec:linuxX64Test
 ```
 
+## The ABI dumps come from macOS
+
+`apiDump` run anywhere else silently drops the Apple targets — the declarations are the same, but
+the dump's target list is not, and the release check then fails on macOS. Dispatch the `api-dump`
+workflow, download its artifact and commit it, rather than dumping locally.
+
 ## Releasing
 
 Manual, like Kormium's own: publishing to Maven Central cannot be undone, so nothing fires from a

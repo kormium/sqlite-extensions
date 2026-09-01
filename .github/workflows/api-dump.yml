@@ -1,0 +1,29 @@
+name: api-dump
+
+# The klib ABI dump has to be produced on macOS: it is the only host where every declared target
+# builds, and a dump made anywhere else silently drops the Apple targets — which then fails the
+# check at release time, when it is most expensive to discover. Dispatch this, download the
+# artifact, commit it.
+on:
+  workflow_dispatch:
+
+jobs:
+  dump:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Dump the public ABI
+        run: ./gradlew apiDump -Pkormium.ignoreSibling=true --console=plain
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: api-dumps
+          path: "*/api/**"
