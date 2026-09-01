@@ -99,7 +99,10 @@ kotlin {
         val staticLib = outDir.map { it.file("libsqlitevec.a") }
 
         val compileVec = tasks.register<Exec>("compileSqliteVec$capName") {
-            dependsOn(fetchVec, unpackHeaders)
+            // The Kotlin/Native toolchain is what compiles this C, and on a clean machine it is not
+            // there until Gradle fetches it. Nothing else in this task's graph would trigger that —
+            // the compile runs before cinterop, which is the first thing that would have needed it.
+            dependsOn(fetchVec, unpackHeaders, "downloadKotlinNativeDistribution")
             inputs.dir(cinteropDir)
             inputs.dir(headersDir)
             outputs.file(objFile)
