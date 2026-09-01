@@ -1,0 +1,17 @@
+// Klib ABI Dump
+// Targets: [linuxX64, mingwX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <io.github.kormium:kormium-sqlite-regexp>
+final object io.github.kormium.sqlite.regexp/SqliteRegexp : io.github.kormium/SqliteExtension { // io.github.kormium.sqlite.regexp/SqliteRegexp|null[0]
+    final val name // io.github.kormium.sqlite.regexp/SqliteRegexp.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.kormium.sqlite.regexp/SqliteRegexp.name.<get-name>|<get-name>(){}[0]
+    final val supportedEngines // io.github.kormium.sqlite.regexp/SqliteRegexp.supportedEngines|{}supportedEngines[0]
+        final fun <get-supportedEngines>(): kotlin.collections/Set<io.github.kormium/SqliteEngine> // io.github.kormium.sqlite.regexp/SqliteRegexp.supportedEngines.<get-supportedEngines>|<get-supportedEngines>(){}[0]
+
+    final fun beforeOpen(io.github.kormium/SqliteRegistrationScope) // io.github.kormium.sqlite.regexp/SqliteRegexp.beforeOpen|beforeOpen(io.github.kormium.SqliteRegistrationScope){}[0]
+    final fun install(io.github.kormium/SqliteConnectionScope) // io.github.kormium.sqlite.regexp/SqliteRegexp.install|install(io.github.kormium.SqliteConnectionScope){}[0]
+}

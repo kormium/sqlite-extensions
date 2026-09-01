@@ -22,8 +22,20 @@ jobs:
       # Explicit tasks rather than `build`: on a Linux runner `build` reaches the shared native
       # metadata, which needs the cinterop of every declared target — including the Apple ones,
       # whose C cannot be compiled here. Kormium's own CI is task-by-task for the same reason.
-      - name: Test on linuxX64
-        run: ./gradlew :kormium-sqlite-vec:linuxX64Test -Pkormium.ignoreSibling=true
+      - name: Test every package on linuxX64
+        run: >-
+          ./gradlew -Pkormium.ignoreSibling=true
+          :kormium-sqlite-vec:linuxX64Test
+          :kormium-sqlite-uuid:compileKotlinLinuxX64
+          :kormium-sqlite-regexp:compileKotlinLinuxX64
+          :kormium-sqlite-series:compileKotlinLinuxX64
+          :kormium-sqlite-sha1:compileKotlinLinuxX64
+          :kormium-sqlite-decimal:compileKotlinLinuxX64
+
+      # Four packages in one binary. This is what would break first if a package ever started
+      # carrying a SQLite of its own.
+      - name: Test extensions together
+        run: ./gradlew :sample:linuxX64Test -Pkormium.ignoreSibling=true
 
       - name: Compile the Node flavour
         run: ./gradlew :kormium-sqlite-vec:compileKotlinWasmJs -Pkormium.ignoreSibling=true

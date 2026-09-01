@@ -7,7 +7,15 @@ pluginManagement {
 
 rootProject.name = "sqlite-extensions"
 
-include("kormium-sqlite-vec")
+include(
+    "kormium-sqlite-vec",
+    "kormium-sqlite-uuid",
+    "kormium-sqlite-regexp",
+    "kormium-sqlite-series",
+    "kormium-sqlite-sha1",
+    "kormium-sqlite-decimal",
+    "sample",
+)
 
 // Develop against a Kormium checkout sitting next to this one, when there is one: the SPI moves
 // with the driver, and an extension is the first thing to notice when it changes. Without the

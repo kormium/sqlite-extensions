@@ -1,22 +1,20 @@
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 
 plugins {
-    // Applied to the publishable subprojects below, not to the root.
-    id("com.vanniktech.maven.publish") version "0.37.0" apply false
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.18.1"
 }
 
+// The maven-publish plugin is not declared here: buildSrc puts it on the build classpath for the
+// kormium-sqlite-extension convention plugin, and declaring a version again would conflict with
+// that. Subprojects apply it by id below, which resolves from the classpath.
+
 apiValidation {
+    // The sample is a demonstration and an integration test, not a published surface.
+    ignoredProjects.add("sample")
+
     // An extension package is a contract for application code, so track the klib ABI too.
     @OptIn(kotlinx.validation.ExperimentalBCVApi::class)
     klib { enabled = true }
-}
-
-buildscript {
-    repositories { mavenCentral() }
-    dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.10")
-    }
 }
 
 allprojects {
@@ -26,6 +24,7 @@ allprojects {
 }
 
 subprojects {
+    if (name == "sample") return@subprojects
     apply(plugin = "com.vanniktech.maven.publish")
 
     configure<MavenPublishBaseExtension> {

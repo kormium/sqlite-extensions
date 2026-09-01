@@ -1,6 +1,6 @@
 package io.github.kormium.sqlite.vec
 
-import csqlitevec.kormium_register_sqlite_vec
+import csqlite_vec.kormium_register_sqlite_vec
 import io.github.kormium.SqliteConnectionScope
 import io.github.kormium.SqliteEngine
 import io.github.kormium.SqliteExtension
